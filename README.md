@@ -32,6 +32,53 @@ The DID's:
 Goal: the goal of this part is to register that the vendors of the custodians trust the vendor Drimpy for the issuance of NutsConsentCredentials. 
 Why: This is necessary to be able to sync NutsConsentCredentials from the Nuts-node of Drimpy to the Nuts nodes of the custodians
 
-## create consent-record,
+# create consent-record
+- 3.1: login by user (existing tech)
+- 3.2: create consent-record (existing tech)
+- 3.3: store consent-record (existing tech)
+- 3.4 search did:nuts-identifier of custodian
+- 3.6 search did:nuts-identifier of actor(s)
+- 3.8 register NutsConsentCredential
 
+# NutsConsentCredential
+~~~
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://nuts.nl/credentials/v1",
+    "http://schema.org/",
+    "https://w3c-ccg.github.io/lds-jws2020/contexts/lds-jws2020-v1.json",
+    "https://fhircat.org/fhir-r4/original/contexts/root.context.jsonld"
+  ],
+  "issuer": "did:nuts:PGOPatientID",
+  "type": ["VerifiableCredential", "nuts:NutsConsentCredential"],
+  "expirationDate": "2023-04-03T20:34:17.687862+01:00",
+  "credentialSubject": {
+    "id":"did:nuts:123-CareOrganisation",
+    "type":"Organization",
+    "member": {
+      "type":"fhir:Consent",
+      "fhir:subject":"urn:bsn:99998",
+      "fhir:decision":"allow",
+      "provision":{
+        "action":"access",
+        "actor":"did:nuts:456-Huisarts",
+        "fhir:purpose":["zorginzage"]
+      }
+    }
+  },
+  "issuedAt":"2023-04-17T16:05:00",
+  "expirationDate":"2024-04-17T16:05:00",
+  "proof": {
+    "type": "JsonWebSignature2020",
+    "verificationMethod": "did:nuts:123456789#key-1",
+    "created": "2023-04-03T16:34:17.687862+01:00",
+    "jws": "eyJhbGciOiJFUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..hKcboC8m6YnZPi6ReJAYs0J0Ztn5nxcx2EavoXdtrkWxmE1JZmImW89_8IIgjvfI8XtGeDlEnGywAuY2u7y9Bw"
+  }
+}
+~~~
 
+# Build plan
+1. Deploy nuts-node in the development-network using this documentation: https://nuts-node.readthedocs.io/en/stable/pages/getting-started/3-configure-your-node.html
+2. use Postman for onboarding
+3. Add API-calls 3.4, 3.6, 3.8 to Drimpy-app
