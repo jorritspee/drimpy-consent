@@ -13,10 +13,7 @@ box Bronhouder
   participant admin_app_bron
 end box
 
-burger -> toes: login
-
 group onboarding drimpy
-  autonumber inc a
   admin_app_drimpy -> nuts_drimpy: register did:nuts of vendors as trusted issuer of NutsOrganizationCredential
   note right
     api endpoint: /internal/vcr/v2/verifier/trust
@@ -45,8 +42,11 @@ group onboarding bronhouder
   nuts_bron -> nuts_drimpy: sync trust
 end group
 
-group create toestemming
+group create consent-record
   autonumber inc a
+
+  burger -> toes: login
+
   toes -> toes: create consent-record (1 custodian, 1 actor)
   toes -> toes_db: store consent-record (1 custodian, 1 actor)
   toes -> nuts_drimpy: search did:nuts of custodian
