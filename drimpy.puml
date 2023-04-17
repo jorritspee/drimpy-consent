@@ -1,0 +1,90 @@
+@startuml Drimpy
+autonumber 1.1
+actor burger
+box Drimpy #lightblue
+  participant toestemming_app as toes
+  participant toestemming_db as toes_db
+  participant admin_app_drimpy
+  participant nuts_node_drimpy as nuts_drimpy
+end box
+
+box Bronhouder
+  participant nuts_node_bron as nuts_bron
+  participant admin_app_bron
+end box
+
+burger -> toes: login
+
+group onboarding drimpy
+  autonumber inc a
+  admin_app_drimpy -> nuts_drimpy: register did:nuts of vendors as trusted issuer of NutsOrganizationCredential
+  note right
+    api endpoint: /internal/vcr/v2/verifier/trust
+    credentialType:
+        NutsOrganizationCredential
+    issuer: 
+        parsek:	did:nuts:DW7R4nk1he5aP7ZRMBUT8yB6RYYTUsKsHBn5eYrgQj6Y
+        Interoplab:	did:nuts:GQVCPtXWSStiTFfxNmdX679YGF7rvGFjk3DMZvHMect2
+        Firely:	did:nuts:77HfbxNYTx9v9tNow51xXnwMc9io85q6BneP6nKASeiU
+        Nexus:	did:nuts:AkPuuhpkbfnmQUFSfycjqrv9nN3L7tkbyGKZG4MfRvtX
+        Kiesz:	did:nuts:CkCCGbA7LxsKPYPj9mbHqRQc3382azg2TehXD3coBm7b
+  end note
+  nuts_drimpy -> nuts_bron: sync trust
+end group
+
+group onboarding bronhouder
+  autonumber inc a
+  admin_app_bron -> nuts_bron: register did:nuts of vendor Drimpy as trusted issuer of NutsConsentCredential
+  note right
+    api endpoint: /internal/vcr/v2/verifier/trust
+    credentialType:
+        NutsConsentCredential
+    issuer:
+        did:nuts of vendor Drimpy
+  end note
+  nuts_bron -> nuts_drimpy: sync trust
+end group
+
+group create toestemming
+  autonumber inc a
+  toes -> toes: create consent-record (1 custodian, 1 actor)
+  toes -> toes_db: store consent-record (1 custodian, 1 actor)
+  toes -> nuts_drimpy: search did:nuts of custodian
+  note right
+    api endpoint: /internal/vcr/v2/issuer/vc/search
+    payload:
+        {
+            "query": {
+                "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://nuts.nl/credentials/v1"
+                ],
+                "type": [
+                "VerifiableCredential",
+                "NutsOrganizationCredential"
+                ],
+                "credentialSubject": {
+                "organization": {
+                    "name": "bronhoudernaam"
+                }
+                }
+            }
+        }
+    https://nuts-node.readthedocs.io/en/stable/pages/integrating/vc.html#searching-vcsx
+  end note
+  nuts_drimpy --> toes: <nuts:did custodian>
+  toes -> nuts_drimpy: search did:nuts of actor
+  nuts_drimpy --> toes: <nuts:did actor>
+  toes -> nuts_drimpy: register NutsConsentCredential
+  note right
+  credentialSubject
+    - id: nuts:did custodian
+    - actor: nuts:did actor
+    - purposeOfUse: "bgz-sender"
+    - subject: bsn
+  end note
+  nuts_drimpy --> toes: ok
+  nuts_drimpy -> nuts_bron: sync NutsConsentCredential
+end group
+
+@enduml
